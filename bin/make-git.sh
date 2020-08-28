@@ -30,8 +30,11 @@ mkdir -p ${DIST_DIR}
 
 # Install build dependencies
 echo "Installing git build dependencies"
-apt-get update
-apt-get install -y --no-install-recommends git dh-autoreconf libcurl4-gnutls-dev libexpat1-dev libz-dev libssl-dev
+yum update -y
+yum install -y git diffutils.x86_64 zlib-devel gcc.x86_64 autoconf.noarch
+#yum install -y git dh-autoreconf libcurl4-gnutls-dev libexpat1-dev libz-dev libssl-dev
+#apt-get update
+#apt-get install -y --no-install-recommends git dh-autoreconf libcurl4-gnutls-dev libexpat1-dev libz-dev libssl-dev
 
 # cut -c53- here drops the SHA (40), tab (1) and "refs/tags/v" (11), because some things, like the
 # snapshot URL and tarball root directory, don't have the leading "v" from the tag in them
@@ -41,7 +44,8 @@ curl -s -o - "https://git.kernel.org/pub/scm/git/git.git/snapshot/git-${GIT_VERS
 cd "${SOURCE_DIR}"
 
 # Uninstall pkg git
-apt-get purge -y git
+yum remove -y git
+#apt-get purge -y git
 
 # Install git from source
 make configure
@@ -51,7 +55,11 @@ make NO_TCLTK=1 NO_GETTEXT=1 install
 # Remove and clean up dependencies
 cd /
 rm -rf ${SOURCE_DIR}
-apt-get purge -y dh-autoreconf
-apt-get clean autoclean
-apt-get autoremove -y
-rm -rf /var/lib/apt/lists/*
+yum remove -y autoconf.noarch
+#yum remove dh-autoreconf
+yum clean all
+yum autoremove
+#apt-get purge -y dh-autoreconf
+#apt-get clean autoclean
+#apt-get autoremove -y
+#rm -rf /var/lib/apt/lists/*

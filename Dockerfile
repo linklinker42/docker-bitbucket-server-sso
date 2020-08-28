@@ -1,4 +1,6 @@
-ARG BASE_IMAGE=adoptopenjdk:8-hotspot
+ARG BASE_IMAGE=registry.cloudbrocktec.com/redhat/ubi/ubi8
+#ARG BASE_IMAGE=localhost/redhat/ubi/ubi8:8.2
+#ARG BASE_IMAGE=adoptopenjdk:8-hotspot
 FROM $BASE_IMAGE
 
 ARG BITBUCKET_VERSION
@@ -8,7 +10,7 @@ ENV RUN_USER                                        bitbucket
 ENV RUN_GROUP                                       bitbucket
 ENV RUN_UID                                         2003
 ENV RUN_GID                                         2003
-
+ENV JAVA_HOME /etc/alternatives/jre
 # https://confluence.atlassian.com/display/BitbucketServer/Bitbucket+Server+home+directory
 ENV BITBUCKET_HOME                                  /var/atlassian/application-data/bitbucket
 ENV BITBUCKET_INSTALL_DIR                           /opt/atlassian/bitbucket
@@ -24,11 +26,16 @@ EXPOSE 7999
 CMD ["/entrypoint.py"]
 ENTRYPOINT ["/sbin/tini", "--"]
 
-RUN apt-get update && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends fontconfig openssh-client perl python3 python3-jinja2 \
-    && apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN yum update -y \
+    && yum install -y java-1.8.0-openjdk-headless fontconfig openssh-clients perl python3 python3-jinja2 \
+    && yum clean all
+	
+#RUN apt-get update && apt-get upgrade -y \
+#    && apt-get install -y --no-install-recommends fontconfig openssh-client perl python3 python3-jinja2 \
+#    && apt-get clean autoclean && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 COPY bin/make-git.sh                                /
+RUN chmod 755 /make-git.sh
 RUN /make-git.sh
 
 ARG TINI_VERSION=v0.18.0
